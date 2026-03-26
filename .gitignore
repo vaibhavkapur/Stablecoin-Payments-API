@@ -10,3 +10,7 @@ venv/
 .pytest_cache/
 stablecoin_payments.db
 .claude/
+docs/_site/
+docs/.jekyll-cache/
+docs/.jekyll-metadata
+docs/Gemfile.lock
