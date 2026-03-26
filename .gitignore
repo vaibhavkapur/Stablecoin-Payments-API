@@ -8,3 +8,5 @@ build/
 venv/
 .mypy_cache/
 .pytest_cache/
+stablecoin_payments.db
+.claude/
