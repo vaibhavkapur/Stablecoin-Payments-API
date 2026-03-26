@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stablecoin Payments — Dashboard</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0a0a0f; color: #e0e0e0; }
+
+    .top-bar { background: #111118; border-bottom: 1px solid #222; padding: 16px 32px; display: flex; justify-content: space-between; align-items: center; }
+    .top-bar h1 { font-size: 18px; font-weight: 600; color: #fff; }
+    .top-bar .links a { color: #818cf8; text-decoration: none; margin-left: 20px; font-size: 14px; }
+    .top-bar .links a:hover { color: #a5b4fc; }
+
+    .container { max-width: 1200px; margin: 0 auto; padding: 32px; }
+
+    .api-key-bar { background: #111118; border: 1px solid #222; border-radius: 8px; padding: 16px; margin-bottom: 24px; display: flex; gap: 12px; align-items: center; }
+    .api-key-bar input { flex: 1; background: #1a1a24; border: 1px solid #333; border-radius: 6px; padding: 10px 14px; color: #e0e0e0; font-family: monospace; font-size: 13px; }
+    .api-key-bar button { background: #4f46e5; color: #fff; border: none; border-radius: 6px; padding: 10px 20px; cursor: pointer; font-size: 13px; font-weight: 500; }
+    .api-key-bar button:hover { background: #4338ca; }
+
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; margin-bottom: 24px; }
+
+    .card { background: #111118; border: 1px solid #222; border-radius: 12px; padding: 24px; }
+    .card h2 { font-size: 14px; font-weight: 500; color: #888; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 16px; }
+    .card h3 { font-size: 13px; color: #666; margin-bottom: 8px; }
+
+    .stat { font-size: 32px; font-weight: 700; color: #fff; }
+    .stat-sm { font-size: 20px; font-weight: 600; color: #fff; }
+    .stat-label { font-size: 12px; color: #666; margin-top: 4px; }
+
+    .balance-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #1a1a24; }
+    .balance-row:last-child { border-bottom: none; }
+    .balance-type { font-size: 13px; color: #aaa; }
+    .balance-amount { font-size: 15px; font-weight: 600; color: #34d399; font-family: monospace; }
+    .balance-amount.negative { color: #f87171; }
+    .balance-amount.zero { color: #555; }
+
+    table { width: 100%; border-collapse: collapse; }
+    th { text-align: left; font-size: 11px; font-weight: 500; color: #666; text-transform: uppercase; letter-spacing: 0.5px; padding: 8px 12px; border-bottom: 1px solid #222; }
+    td { padding: 10px 12px; font-size: 13px; border-bottom: 1px solid #1a1a24; }
+    tr:hover { background: #1a1a24; }
+
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+    .badge-green { background: #064e3b; color: #34d399; }
+    .badge-yellow { background: #422006; color: #fbbf24; }
+    .badge-red { background: #450a0a; color: #f87171; }
+    .badge-blue { background: #1e1b4b; color: #818cf8; }
+    .badge-gray { background: #1a1a24; color: #888; }
+
+    .mono { font-family: monospace; font-size: 12px; color: #888; }
+    .truncate { max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block; vertical-align: middle; }
+
+    .actions { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+    .btn { background: #1a1a24; border: 1px solid #333; border-radius: 6px; padding: 8px 16px; color: #e0e0e0; cursor: pointer; font-size: 12px; }
+    .btn:hover { background: #222; border-color: #444; }
+    .btn-primary { background: #4f46e5; border-color: #4f46e5; color: #fff; }
+    .btn-primary:hover { background: #4338ca; }
+    .btn-success { background: #065f46; border-color: #065f46; color: #34d399; }
+    .btn-success:hover { background: #047857; }
+
+    .form-row { display: flex; gap: 8px; margin-bottom: 8px; }
+    .form-row input, .form-row select { background: #1a1a24; border: 1px solid #333; border-radius: 6px; padding: 8px 12px; color: #e0e0e0; font-size: 13px; flex: 1; }
+
+    .section-title { font-size: 20px; font-weight: 600; color: #fff; margin-bottom: 16px; margin-top: 8px; }
+
+    .status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+    .status-dot.green { background: #34d399; }
+    .status-dot.yellow { background: #fbbf24; }
+    .status-dot.red { background: #f87171; }
+
+    .empty { text-align: center; padding: 40px; color: #555; font-size: 14px; }
+
+    #toast { position: fixed; bottom: 24px; right: 24px; background: #1e1b4b; border: 1px solid #4f46e5; color: #a5b4fc; padding: 12px 20px; border-radius: 8px; font-size: 13px; display: none; z-index: 1000; }
+  </style>
+</head>
+<body>
+
+<div class="top-bar">
+  <h1>Stablecoin Payments</h1>
+  <div class="links">
+    <a href="/dashboard">Dashboard</a>
+    <a href="/checkout">Checkout</a>
+    <a href="/docs" target="_blank">API Docs</a>
+  </div>
+</div>
+
+<div class="container">
+  <!-- API Key -->
+  <div class="api-key-bar">
+    <input type="text" id="apiKey" placeholder="Enter API key or generate one...">
+    <button onclick="generateApiKey()">Generate Key</button>
+    <button onclick="loadAll()" class="btn-primary" style="background:#4f46e5;border:none;border-radius:6px;padding:10px 20px;color:#fff;cursor:pointer;">Load Data</button>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="card" style="margin-bottom: 24px;">
+    <h2>Quick Actions</h2>
+    <div class="form-row">
+      <input type="email" id="newEmail" placeholder="Email address">
+      <button class="btn btn-primary" onclick="createCustomer()">Create Customer</button>
+    </div>
+    <div class="form-row">
+      <select id="walletCustomer"><option value="">Select customer...</option></select>
+      <button class="btn btn-primary" onclick="createWallet()">Create Wallet</button>
+    </div>
+    <div class="form-row">
+      <select id="depositCustomer"><option value="">Select customer...</option></select>
+      <input type="number" id="depositAmount" placeholder="Amount USD" step="0.01">
+      <button class="btn btn-primary" onclick="createDeposit()">Deposit USD</button>
+    </div>
+    <div class="form-row">
+      <select id="transferWallet"><option value="">Select wallet...</option></select>
+      <input type="text" id="transferRecipient" placeholder="Recipient 0x...">
+      <input type="number" id="transferAmount" placeholder="Amount USDC" step="0.01">
+      <button class="btn btn-primary" onclick="createTransfer()">Transfer</button>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="grid-3" id="statsGrid">
+    <div class="card">
+      <h2>Customers</h2>
+      <div class="stat" id="statCustomers">—</div>
+    </div>
+    <div class="card">
+      <h2>Webhook Events</h2>
+      <div class="stat" id="statEvents">—</div>
+    </div>
+    <div class="card">
+      <h2>Reconciliation</h2>
+      <div class="stat-sm" id="statRecon">—</div>
+    </div>
+  </div>
+
+  <!-- Ledger Summary -->
+  <div class="card" style="margin-bottom: 24px;">
+    <h2>Ledger Summary</h2>
+    <div id="ledgerSummary"><div class="empty">Load data to view ledger</div></div>
+  </div>
+
+  <!-- Customers & Wallets -->
+  <div class="grid">
+    <div class="card">
+      <h2>Customers</h2>
+      <div id="customersTable"><div class="empty">No customers</div></div>
+    </div>
+    <div class="card">
+      <h2>Balances</h2>
+      <div id="balancesPanel"><div class="empty">Select a customer to view balances</div></div>
+    </div>
+  </div>
+
+  <!-- Webhook Events -->
+  <div class="card" style="margin-bottom: 24px;">
+    <h2>Webhook Events</h2>
+    <div id="webhookTable" style="overflow-x: auto;"><div class="empty">No events</div></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const BASE = '';
+let apiKey = '';
+let customers = [];
+let wallets = [];
+
+function headers() {
+  return { 'Content-Type': 'application/json', 'X-API-Key': apiKey };
+}
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.display = 'block';
+  setTimeout(() => t.style.display = 'none', 3000);
+}
+
+function badge(status) {
+  const map = {
+    completed: 'green', succeeded: 'green', confirmed: 'green', delivered: 'green',
+    pending: 'yellow', processing: 'yellow', submitted: 'yellow', requires_payment_method: 'yellow',
+    failed: 'red',
+  };
+  return `<span class="badge badge-${map[status] || 'gray'}">${status}</span>`;
+}
+
+function balanceClass(val) {
+  if (val > 0) return 'balance-amount';
+  if (val < 0) return 'balance-amount negative';
+  return 'balance-amount zero';
+}
+
+async function generateApiKey() {
+  const res = await fetch(`${BASE}/v1/admin/api_keys`, { method: 'POST' });
+  const data = await res.json();
+  apiKey = data.api_key;
+  document.getElementById('apiKey').value = apiKey;
+  toast('API key generated');
+}
+
+async function loadAll() {
+  apiKey = document.getElementById('apiKey').value;
+  if (!apiKey) { toast('Enter or generate an API key first'); return; }
+  await Promise.all([loadCustomers(), loadEvents(), loadLedger(), loadRecon()]);
+}
+
+async function loadCustomers() {
+  const res = await fetch(`${BASE}/v1/customers`, { headers: headers() });
+  customers = await res.json();
+  document.getElementById('statCustomers').textContent = customers.length;
+
+  // Populate selects
+  for (const sel of ['walletCustomer', 'depositCustomer']) {
+    const el = document.getElementById(sel);
+    el.innerHTML = '<option value="">Select customer...</option>' +
+      customers.map(c => `<option value="${c.id}">${c.email} (${c.id.slice(0, 12)}...)</option>`).join('');
+  }
+
+  // Load all wallets
+  wallets = [];
+  for (const c of customers) {
+    const wr = await fetch(`${BASE}/v1/wallets?customer_id=${c.id}`, { headers: headers() });
+    const ws = await wr.json();
+    wallets.push(...ws);
+  }
+  const walSel = document.getElementById('transferWallet');
+  walSel.innerHTML = '<option value="">Select wallet...</option>' +
+    wallets.map(w => `<option value="${w.id}">${w.id.slice(0, 16)}... (${w.chain})</option>`).join('');
+
+  // Render table
+  if (!customers.length) {
+    document.getElementById('customersTable').innerHTML = '<div class="empty">No customers yet</div>';
+    return;
+  }
+  document.getElementById('customersTable').innerHTML = `<table>
+    <tr><th>ID</th><th>Email</th><th>Actions</th></tr>
+    ${customers.map(c => `<tr>
+      <td class="mono">${c.id.slice(0, 16)}...</td>
+      <td>${c.email}</td>
+      <td><button class="btn" onclick="viewBalance('${c.id}')">Balances</button></td>
+    </tr>`).join('')}
+  </table>`;
+}
+
+async function viewBalance(customerId) {
+  const res = await fetch(`${BASE}/v1/balances/${customerId}`, { headers: headers() });
+  const data = await res.json();
+  const cus = customers.find(c => c.id === customerId);
+  document.getElementById('balancesPanel').innerHTML = `
+    <h3>${cus ? cus.email : customerId}</h3>
+    ${data.balances.map(b => `<div class="balance-row">
+      <span class="balance-type">${b.account_type}</span>
+      <span class="${balanceClass(b.balance)}">${b.balance.toFixed(2)} ${b.currency}</span>
+    </div>`).join('')}
+  `;
+}
+
+async function loadEvents() {
+  const res = await fetch(`${BASE}/v1/webhooks/events`, { headers: headers() });
+  const events = await res.json();
+  document.getElementById('statEvents').textContent = events.length;
+
+  if (!events.length) {
+    document.getElementById('webhookTable').innerHTML = '<div class="empty">No webhook events yet</div>';
+    return;
+  }
+  document.getElementById('webhookTable').innerHTML = `<table>
+    <tr><th>Event ID</th><th>Type</th><th>Status</th><th>Retries</th><th>Created</th></tr>
+    ${events.map(e => `<tr>
+      <td class="mono">${e.id.slice(0, 16)}...</td>
+      <td><span class="badge badge-blue">${e.event_type}</span></td>
+      <td>${badge(e.delivery_status)}</td>
+      <td>${e.retry_count}</td>
+      <td class="mono">${new Date(e.created_at).toLocaleTimeString()}</td>
+    </tr>`).join('')}
+  </table>`;
+}
+
+async function loadLedger() {
+  const res = await fetch(`${BASE}/v1/admin/ledger_summary`, { headers: headers() });
+  const data = await res.json();
+  if (!data.accounts.length) {
+    document.getElementById('ledgerSummary').innerHTML = '<div class="empty">No ledger accounts</div>';
+    return;
+  }
+  document.getElementById('ledgerSummary').innerHTML = `<table>
+    <tr><th>Account</th><th>Type</th><th>Customer</th><th>Currency</th><th style="text-align:right">Balance</th></tr>
+    ${data.accounts.map(a => `<tr>
+      <td class="mono">${a.account_id.slice(0, 16)}...</td>
+      <td>${a.account_type}</td>
+      <td class="mono">${a.customer_id ? a.customer_id.slice(0, 12) + '...' : '<span style="color:#555">system</span>'}</td>
+      <td>${a.currency}</td>
+      <td style="text-align:right"><span class="${balanceClass(a.balance)}">${a.balance.toFixed(2)}</span></td>
+    </tr>`).join('')}
+  </table>`;
+}
+
+async function loadRecon() {
+  const res = await fetch(`${BASE}/v1/admin/reconciliation`, { headers: headers() });
+  const data = await res.json();
+  const el = document.getElementById('statRecon');
+  if (data.status === 'clean') {
+    el.innerHTML = '<span class="status-dot green"></span>Clean';
+  } else {
+    el.innerHTML = `<span class="status-dot red"></span>${data.issues.length} issue(s)`;
+  }
+}
+
+async function createCustomer() {
+  const email = document.getElementById('newEmail').value;
+  if (!email) { toast('Enter an email'); return; }
+  const res = await fetch(`${BASE}/v1/customers`, { method: 'POST', headers: headers(), body: JSON.stringify({ email }) });
+  if (res.ok) { toast('Customer created'); document.getElementById('newEmail').value = ''; await loadAll(); }
+  else { const e = await res.json(); toast(e.detail || 'Error'); }
+}
+
+async function createWallet() {
+  const cid = document.getElementById('walletCustomer').value;
+  if (!cid) { toast('Select a customer'); return; }
+  const res = await fetch(`${BASE}/v1/wallets`, { method: 'POST', headers: headers(), body: JSON.stringify({ customer_id: cid, chain: 'base-sepolia' }) });
+  if (res.ok) { toast('Wallet created'); await loadAll(); }
+  else { const e = await res.json(); toast(e.detail || 'Error'); }
+}
+
+async function createDeposit() {
+  const cid = document.getElementById('depositCustomer').value;
+  const amount = document.getElementById('depositAmount').value;
+  if (!cid || !amount) { toast('Select customer and enter amount'); return; }
+  const res = await fetch(`${BASE}/v1/deposits`, { method: 'POST', headers: headers(), body: JSON.stringify({ customer_id: cid, amount_usd: amount }) });
+  if (!res.ok) { const e = await res.json(); toast(e.detail || 'Error'); return; }
+  const dep = await res.json();
+  // Auto-confirm
+  await fetch(`${BASE}/v1/deposits/${dep.id}/confirm`, { method: 'POST', headers: headers() });
+  toast(`Deposited $${amount} → ${amount} USDC`);
+  document.getElementById('depositAmount').value = '';
+  await loadAll();
+}
+
+async function createTransfer() {
+  const wid = document.getElementById('transferWallet').value;
+  const recipient = document.getElementById('transferRecipient').value;
+  const amount = document.getElementById('transferAmount').value;
+  if (!wid || !recipient || !amount) { toast('Fill all transfer fields'); return; }
+  const res = await fetch(`${BASE}/v1/transfers`, { method: 'POST', headers: headers(), body: JSON.stringify({ wallet_id: wid, recipient_address: recipient, amount_usdc: amount }) });
+  if (!res.ok) { const e = await res.json(); toast(e.detail || 'Error'); return; }
+  const tr = await res.json();
+  // Auto-confirm
+  await fetch(`${BASE}/v1/transfers/${tr.id}/confirm`, { method: 'POST', headers: headers() });
+  toast(`Transferred ${amount} USDC (tx: ${tr.tx_hash.slice(0, 12)}...)`);
+  document.getElementById('transferAmount').value = '';
+  document.getElementById('transferRecipient').value = '';
+  await loadAll();
+}
+</script>
+</body>
+</html>

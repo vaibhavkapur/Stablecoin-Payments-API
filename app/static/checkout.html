@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stablecoin Checkout</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0a0a0f; color: #e0e0e0; min-height: 100vh; display: flex; flex-direction: column; }
+
+    .top-bar { background: #111118; border-bottom: 1px solid #222; padding: 16px 32px; display: flex; justify-content: space-between; align-items: center; }
+    .top-bar h1 { font-size: 18px; font-weight: 600; color: #fff; }
+    .top-bar .links a { color: #818cf8; text-decoration: none; margin-left: 20px; font-size: 14px; }
+    .top-bar .links a:hover { color: #a5b4fc; }
+
+    .checkout-container { flex: 1; display: flex; align-items: center; justify-content: center; padding: 32px; }
+
+    .checkout-card { background: #111118; border: 1px solid #222; border-radius: 16px; width: 100%; max-width: 480px; overflow: hidden; }
+
+    .checkout-header { padding: 32px 32px 24px; border-bottom: 1px solid #1a1a24; }
+    .checkout-header .merchant-name { font-size: 14px; color: #888; margin-bottom: 4px; }
+    .checkout-header .amount { font-size: 48px; font-weight: 700; color: #fff; }
+    .checkout-header .currency { font-size: 18px; color: #818cf8; font-weight: 500; margin-left: 8px; }
+
+    .checkout-body { padding: 24px 32px; }
+
+    .detail-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #1a1a24; font-size: 14px; }
+    .detail-row:last-child { border-bottom: none; }
+    .detail-label { color: #888; }
+    .detail-value { color: #e0e0e0; font-weight: 500; }
+    .detail-value.mono { font-family: monospace; font-size: 12px; color: #aaa; }
+
+    .fee-row .detail-value { color: #fbbf24; }
+    .total-row { border-top: 2px solid #222; margin-top: 8px; padding-top: 16px; }
+    .total-row .detail-label { color: #fff; font-weight: 600; }
+    .total-row .detail-value { color: #34d399; font-weight: 700; font-size: 16px; }
+
+    .checkout-footer { padding: 24px 32px 32px; }
+
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-size: 12px; color: #888; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .form-group input, .form-group select { width: 100%; background: #1a1a24; border: 1px solid #333; border-radius: 8px; padding: 12px 16px; color: #e0e0e0; font-size: 14px; }
+    .form-group input:focus, .form-group select:focus { outline: none; border-color: #4f46e5; }
+
+    .pay-btn { width: 100%; background: #4f46e5; color: #fff; border: none; border-radius: 8px; padding: 16px; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 8px; transition: background 0.2s; }
+    .pay-btn:hover { background: #4338ca; }
+    .pay-btn:disabled { background: #333; color: #666; cursor: not-allowed; }
+
+    .pay-btn.success { background: #065f46; }
+    .pay-btn.failed { background: #7f1d1d; }
+
+    .setup-card { background: #111118; border: 1px solid #222; border-radius: 16px; width: 100%; max-width: 480px; padding: 32px; }
+    .setup-card h2 { font-size: 20px; margin-bottom: 20px; color: #fff; }
+    .setup-card .form-group { margin-bottom: 16px; }
+    .setup-card .btn { background: #4f46e5; color: #fff; border: none; border-radius: 8px; padding: 12px 24px; font-size: 14px; cursor: pointer; width: 100%; }
+    .setup-card .btn:hover { background: #4338ca; }
+
+    .badge { display: inline-block; padding: 3px 10px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+    .badge-blue { background: #1e1b4b; color: #818cf8; }
+    .badge-green { background: #064e3b; color: #34d399; }
+
+    .step-indicator { display: flex; gap: 8px; margin-bottom: 24px; }
+    .step { width: 32px; height: 4px; border-radius: 2px; background: #333; }
+    .step.active { background: #4f46e5; }
+    .step.done { background: #34d399; }
+
+    #toast { position: fixed; bottom: 24px; right: 24px; background: #1e1b4b; border: 1px solid #4f46e5; color: #a5b4fc; padding: 12px 20px; border-radius: 8px; font-size: 13px; display: none; z-index: 1000; }
+
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+
+<div class="top-bar">
+  <h1>Stablecoin Payments</h1>
+  <div class="links">
+    <a href="/dashboard">Dashboard</a>
+    <a href="/checkout">Checkout</a>
+    <a href="/docs" target="_blank">API Docs</a>
+  </div>
+</div>
+
+<div class="checkout-container">
+  <!-- Step 1: Setup -->
+  <div class="setup-card" id="setupPanel">
+    <h2>Create a Checkout</h2>
+    <div class="step-indicator">
+      <div class="step active"></div>
+      <div class="step"></div>
+      <div class="step"></div>
+    </div>
+
+    <div class="form-group">
+      <label>API Key</label>
+      <div style="display:flex;gap:8px;">
+        <input type="text" id="setupApiKey" placeholder="Enter or generate an API key">
+        <button class="btn" style="background:#4f46e5;color:#fff;border:none;border-radius:8px;padding:12px 16px;cursor:pointer;white-space:nowrap;" onclick="genKey()">Generate</button>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Merchant Email</label>
+      <input type="email" id="merchantEmail" placeholder="merchant@shop.com" value="merchant@shop.com">
+    </div>
+
+    <div class="form-group">
+      <label>Customer Email</label>
+      <input type="email" id="customerEmail" placeholder="alice@example.com" value="alice@example.com">
+    </div>
+
+    <div class="form-group">
+      <label>Amount (USDC)</label>
+      <input type="number" id="checkoutAmount" placeholder="25.00" value="25.00" step="0.01">
+    </div>
+
+    <div class="form-group">
+      <label>Customer Pre-fund Amount (USD)</label>
+      <input type="number" id="prefundAmount" placeholder="100.00" value="100.00" step="0.01">
+    </div>
+
+    <button class="btn" onclick="setupCheckout()">Create Checkout Session</button>
+  </div>
+
+  <!-- Step 2: Checkout -->
+  <div class="checkout-card hidden" id="checkoutPanel">
+    <div class="checkout-header">
+      <div class="merchant-name" id="coMerchant">Merchant</div>
+      <div>
+        <span class="amount" id="coAmount">0.00</span>
+        <span class="currency">USDC</span>
+      </div>
+    </div>
+
+    <div class="checkout-body">
+      <div class="step-indicator">
+        <div class="step done"></div>
+        <div class="step active"></div>
+        <div class="step"></div>
+      </div>
+
+      <div class="detail-row">
+        <span class="detail-label">Network</span>
+        <span class="detail-value"><span class="badge badge-blue">Base Sepolia</span></span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Token</span>
+        <span class="detail-value">USDC</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Customer</span>
+        <span class="detail-value" id="coCustomerEmail">—</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Available Balance</span>
+        <span class="detail-value" id="coBalance" style="color: #34d399;">—</span>
+      </div>
+      <div class="detail-row fee-row">
+        <span class="detail-label">Platform Fee (2%)</span>
+        <span class="detail-value" id="coFee">—</span>
+      </div>
+      <div class="detail-row total-row">
+        <span class="detail-label">Merchant Receives</span>
+        <span class="detail-value" id="coMerchantReceives">—</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Payment Intent</span>
+        <span class="detail-value mono" id="coPiId">—</span>
+      </div>
+    </div>
+
+    <div class="checkout-footer">
+      <button class="pay-btn" id="payBtn" onclick="confirmPayment()">
+        Pay Now
+      </button>
+    </div>
+  </div>
+
+  <!-- Step 3: Success -->
+  <div class="checkout-card hidden" id="successPanel">
+    <div class="checkout-header" style="text-align: center;">
+      <div style="font-size: 48px; margin-bottom: 12px;">&#10003;</div>
+      <div class="merchant-name">Payment Successful</div>
+      <div>
+        <span class="amount" id="successAmount">0.00</span>
+        <span class="currency">USDC</span>
+      </div>
+    </div>
+    <div class="checkout-body">
+      <div class="step-indicator">
+        <div class="step done"></div>
+        <div class="step done"></div>
+        <div class="step done"></div>
+      </div>
+
+      <div class="detail-row">
+        <span class="detail-label">Status</span>
+        <span class="detail-value"><span class="badge badge-green">Succeeded</span></span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Payment Intent</span>
+        <span class="detail-value mono" id="successPiId">—</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Merchant Received</span>
+        <span class="detail-value" id="successMerchant" style="color:#34d399;">—</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Platform Fee</span>
+        <span class="detail-value" id="successFee" style="color:#fbbf24;">—</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Remaining Balance</span>
+        <span class="detail-value" id="successBalance" style="color:#818cf8;">—</span>
+      </div>
+    </div>
+    <div class="checkout-footer">
+      <button class="pay-btn" onclick="resetCheckout()" style="background:#1a1a24;border:1px solid #333;">New Checkout</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const BASE = '';
+let apiKey = '';
+let merchantId = '', customerId = '', piId = '';
+let amount = 0;
+
+function headers() {
+  return { 'Content-Type': 'application/json', 'X-API-Key': apiKey };
+}
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.display = 'block';
+  setTimeout(() => t.style.display = 'none', 3000);
+}
+
+function show(id) {
+  document.querySelectorAll('.setup-card, .checkout-card').forEach(el => el.classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
+}
+
+async function genKey() {
+  const res = await fetch(`${BASE}/v1/admin/api_keys`, { method: 'POST' });
+  const data = await res.json();
+  document.getElementById('setupApiKey').value = data.api_key;
+  toast('API key generated');
+}
+
+async function ensureCustomer(email) {
+  // Try to create, handle duplicate
+  const res = await fetch(`${BASE}/v1/customers`, { method: 'POST', headers: headers(), body: JSON.stringify({ email }) });
+  if (res.ok) {
+    const c = await res.json();
+    // Create wallet
+    await fetch(`${BASE}/v1/wallets`, { method: 'POST', headers: headers(), body: JSON.stringify({ customer_id: c.id, chain: 'base-sepolia' }) });
+    return c.id;
+  }
+  // Already exists — find it
+  const list = await fetch(`${BASE}/v1/customers`, { headers: headers() });
+  const customers = await list.json();
+  const found = customers.find(c => c.email === email);
+  return found ? found.id : null;
+}
+
+async function setupCheckout() {
+  apiKey = document.getElementById('setupApiKey').value;
+  if (!apiKey) { toast('Generate or enter an API key'); return; }
+
+  const merchantEmail = document.getElementById('merchantEmail').value;
+  const customerEmail = document.getElementById('customerEmail').value;
+  amount = parseFloat(document.getElementById('checkoutAmount').value);
+  const prefund = document.getElementById('prefundAmount').value;
+
+  if (!merchantEmail || !customerEmail || !amount) { toast('Fill all fields'); return; }
+
+  toast('Setting up checkout...');
+
+  // Create merchant & customer
+  merchantId = await ensureCustomer(merchantEmail);
+  customerId = await ensureCustomer(customerEmail);
+
+  if (!merchantId || !customerId) { toast('Failed to create accounts'); return; }
+
+  // Pre-fund customer
+  if (prefund && parseFloat(prefund) > 0) {
+    const dep = await fetch(`${BASE}/v1/deposits`, { method: 'POST', headers: headers(), body: JSON.stringify({ customer_id: customerId, amount_usd: prefund }) });
+    if (dep.ok) {
+      const depData = await dep.json();
+      await fetch(`${BASE}/v1/deposits/${depData.id}/confirm`, { method: 'POST', headers: headers() });
+    }
+  }
+
+  // Create payment intent
+  const piRes = await fetch(`${BASE}/v1/payment_intents`, {
+    method: 'POST', headers: headers(),
+    body: JSON.stringify({ merchant_id: merchantId, amount: amount.toString(), currency: 'USDC' })
+  });
+  if (!piRes.ok) { const e = await piRes.json(); toast(e.detail || 'Error creating payment'); return; }
+  const pi = await piRes.json();
+  piId = pi.id;
+
+  // Get balance
+  const balRes = await fetch(`${BASE}/v1/balances/${customerId}`, { headers: headers() });
+  const balData = await balRes.json();
+  const avail = balData.balances.find(b => b.account_type === 'customer_usdc_available');
+  const balance = avail ? avail.balance : 0;
+
+  // Calculate fee
+  const fee = (amount * 0.02);
+  const merchantReceives = amount - fee;
+
+  // Populate checkout
+  document.getElementById('coMerchant').textContent = merchantEmail;
+  document.getElementById('coAmount').textContent = amount.toFixed(2);
+  document.getElementById('coCustomerEmail').textContent = customerEmail;
+  document.getElementById('coBalance').textContent = balance.toFixed(2) + ' USDC';
+  document.getElementById('coFee').textContent = fee.toFixed(2) + ' USDC';
+  document.getElementById('coMerchantReceives').textContent = merchantReceives.toFixed(2) + ' USDC';
+  document.getElementById('coPiId').textContent = piId;
+
+  show('checkoutPanel');
+}
+
+async function confirmPayment() {
+  const btn = document.getElementById('payBtn');
+  btn.disabled = true;
+  btn.textContent = 'Processing...';
+
+  const res = await fetch(`${BASE}/v1/payment_intents/${piId}/confirm`, {
+    method: 'POST', headers: headers(),
+    body: JSON.stringify({ customer_id: customerId })
+  });
+
+  if (!res.ok) {
+    const e = await res.json();
+    btn.textContent = 'Payment Failed';
+    btn.classList.add('failed');
+    toast(e.detail || 'Payment failed');
+    setTimeout(() => { btn.disabled = false; btn.textContent = 'Pay Now'; btn.classList.remove('failed'); }, 3000);
+    return;
+  }
+
+  const pi = await res.json();
+  const fee = (amount * 0.02);
+
+  // Get updated balance
+  const balRes = await fetch(`${BASE}/v1/balances/${customerId}`, { headers: headers() });
+  const balData = await balRes.json();
+  const avail = balData.balances.find(b => b.account_type === 'customer_usdc_available');
+
+  document.getElementById('successAmount').textContent = amount.toFixed(2);
+  document.getElementById('successPiId').textContent = piId;
+  document.getElementById('successMerchant').textContent = (amount - fee).toFixed(2) + ' USDC';
+  document.getElementById('successFee').textContent = fee.toFixed(2) + ' USDC';
+  document.getElementById('successBalance').textContent = (avail ? avail.balance.toFixed(2) : '0.00') + ' USDC';
+
+  show('successPanel');
+}
+
+function resetCheckout() {
+  document.getElementById('payBtn').disabled = false;
+  document.getElementById('payBtn').textContent = 'Pay Now';
+  document.getElementById('payBtn').classList.remove('success', 'failed');
+  show('setupPanel');
+}
+</script>
+</body>
+</html>
