@@ -2,6 +2,8 @@
 
 A Stripe-like REST API for stablecoin payments. Supports customer management, wallet creation, simulated fiat-to-USDC deposits, USDC transfers, merchant checkout flows, webhook delivery, and double-entry ledger reconciliation.
 
+> **[Read the full documentation](https://vaibhavkapur22.github.io/Stablecoin-Payments-API/)**
+
 ## Getting Started
 
 ```bash
