@@ -5,10 +5,10 @@ nav_order: 2
 ---
 
 # Getting Started
-{: .fs-9 }
+
+[Documentation home](index.md)
 
 Set up the Stablecoin Payments API locally and run your first payment flow in under five minutes.
-{: .fs-6 .fw-300 }
 
 ---
 
@@ -23,9 +23,11 @@ Set up the Stablecoin Payments API locally and run your first payment flow in un
 ## Clone & Install
 
 ```bash
-git clone https://github.com/vaibhavkapur22/Stablecoin-Payments-API.git
+git clone https://github.com/vaibhavkapur/Stablecoin-Payments-API.git
 cd Stablecoin-Payments-API
 pip install -r requirements.txt
+# SQLite driver for the default local database
+pip install aiosqlite
 ```
 
 ## Infrastructure
@@ -217,8 +219,13 @@ This starts four containers:
 
 ## Running Tests
 
+Install the SQLite driver and test dependencies before running the suite:
+
 ```bash
+pip install aiosqlite pytest 'pytest-asyncio==0.25.0'
 pytest tests/ -v
 ```
+
+See [Testing](testing.md) for scope and manual checks.
 
 Tests use an in-memory SQLite database — no external services required.

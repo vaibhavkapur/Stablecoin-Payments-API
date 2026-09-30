@@ -5,10 +5,10 @@ nav_order: 4
 ---
 
 # API Reference
-{: .fs-9 }
+
+[Documentation home](index.md)
 
 Complete reference for all REST endpoints — authentication, request/response schemas, and example payloads.
-{: .fs-6 .fw-300 }
 
 ---
 
@@ -28,7 +28,6 @@ All `/v1/*` endpoints require the `X-API-Key` header. Generate a key via the adm
 curl -X POST http://localhost:8000/v1/admin/api_keys
 ```
 
-{: .note }
 > In development mode (no keys created), all requests are allowed without authentication.
 
 ---

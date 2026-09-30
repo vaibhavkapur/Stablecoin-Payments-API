@@ -5,10 +5,10 @@ nav_order: 6
 ---
 
 # Webhooks
-{: .fs-9 }
+
+[Documentation home](index.md)
 
 Real-time event notifications with HMAC-SHA256 signatures, automatic retries, and delivery tracking.
-{: .fs-6 .fw-300 }
 
 ---
 
@@ -161,5 +161,4 @@ The test endpoint sends a signed webhook immediately, bypassing the retry queue.
 |:---------|:--------|:------------|
 | `WEBHOOK_SECRET` | `whsec_test_secret` | HMAC-SHA256 signing secret |
 
-{: .warning }
 > Use a strong, unique `WEBHOOK_SECRET` in production. The default value is for development only.

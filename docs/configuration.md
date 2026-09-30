@@ -5,10 +5,10 @@ nav_order: 10
 ---
 
 # Configuration
-{: .fs-9 }
+
+[Documentation home](index.md)
 
 Environment variables and settings for database, Redis, authentication, and platform behavior.
-{: .fs-6 .fw-300 }
 
 ---
 
@@ -47,7 +47,6 @@ Redis is used for caching and as a message broker. Required for the Docker Compo
 | `SECRET_KEY` | Yes | `change-me-in-production` | Application secret key |
 | `API_KEY_HEADER` | No | `X-API-Key` | HTTP header name for API keys |
 
-{: .warning }
 > Always set a strong, unique `SECRET_KEY` in production. Never use the default value.
 
 ## Webhooks
@@ -126,7 +125,6 @@ class Settings(BaseSettings):
 settings = Settings()
 ```
 
-{: .note }
 > Environment variables take precedence over `.env` file values, which take precedence over defaults.
 
 ## Security Checklist

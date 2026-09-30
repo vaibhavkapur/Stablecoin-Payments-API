@@ -5,10 +5,10 @@ nav_order: 9
 ---
 
 # Services
-{: .fs-9 }
+
+[Documentation home](index.md)
 
 Business logic layer orchestrating deposits, transfers, payments, wallets, and webhooks.
-{: .fs-6 .fw-300 }
 
 ---
 
@@ -37,7 +37,6 @@ Confirms a pending deposit and creates two balanced ledger journals:
 
 Sets status to `completed` and records `completed_at` timestamp.
 
-{: .note }
 > Confirming an already-completed deposit raises a `ValueError`.
 
 ## Transfer Service
@@ -130,7 +129,7 @@ Events are not delivered inline — the webhook retry worker handles asynchronou
 
 **File**: `app/services/ledger_service.py`
 
-The financial core — see the [Ledger System](ledger) page for full documentation.
+The financial core — see the [Ledger System](ledger.md) page for full documentation.
 
 ### Key Functions
 

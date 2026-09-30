@@ -1,14 +1,20 @@
 # Stablecoin Payments API
 
-A Stripe-like REST API for stablecoin payments. Supports customer management, wallet creation, simulated fiat-to-USDC deposits, USDC transfers, merchant checkout flows, webhook delivery, and double-entry ledger reconciliation.
+A Stripe-style REST API demonstration for customers, wallets, deposits, USDC transfers, merchant checkout, webhooks, and double-entry ledger reconciliation.
 
-> **[Read the full documentation](https://vaibhavkapur22.github.io/Stablecoin-Payments-API/)**
+> **[Read the full documentation](docs/index.md)**
+
+Python / FastAPI / SQLAlchemy, with SQLite or PostgreSQL and Redis. Wallet provisioning, fiat deposits, and blockchain transfers use local simulation; the API does not move real funds.
 
 ## Getting Started
+
+See the [Getting Started guide](docs/getting-started.md) for prerequisites and configuration.
 
 ```bash
 # Local (no Docker)
 pip install -r requirements.txt
+# SQLite driver for the default local database
+pip install aiosqlite
 uvicorn app.main:app --reload --port 8000
 
 # Or with Docker Compose (starts API + Postgres + Redis)
@@ -18,6 +24,8 @@ docker compose up --build
 The API auto-creates tables on startup. Visit http://localhost:8000/docs for Swagger UI.
 
 ## Quick Example
+
+Replace API keys and resource identifiers with values from earlier responses. The deposit and transfer flow is simulated.
 
 ```bash
 # 1. Get an API key

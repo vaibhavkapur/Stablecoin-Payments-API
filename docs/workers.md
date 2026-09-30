@@ -5,10 +5,10 @@ nav_order: 8
 ---
 
 # Workers
-{: .fs-9 }
+
+[Documentation home](index.md)
 
 Three concurrent background processes handling transfer confirmations, webhook delivery, and ledger reconciliation.
-{: .fs-6 .fw-300 }
 
 ---
 

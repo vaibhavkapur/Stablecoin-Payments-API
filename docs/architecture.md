@@ -5,10 +5,10 @@ nav_order: 3
 ---
 
 # Architecture
-{: .fs-9 }
+
+[Documentation home](index.md)
 
 A four-layer design separating API routing, business logic, ledger accounting, and external integrations.
-{: .fs-6 .fw-300 }
 
 ---
 

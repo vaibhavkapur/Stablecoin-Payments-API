@@ -5,16 +5,28 @@ nav_order: 1
 ---
 
 # Stablecoin Payments API
-{: .fs-9 }
 
-A production-grade, Stripe-like REST API for stablecoin payments — enabling businesses to manage customers, wallets, USDC deposits, transfers, and merchant checkout flows on Base Sepolia.
-{: .fs-6 .fw-300 }
+A Stripe-style REST API demonstration for customers, wallets, deposits, USDC transfers, merchant checkout, webhooks, and double-entry ledger reconciliation.
 
----
+[Get Started](getting-started.md) · [API Reference](api-reference.md) · [Repository README](https://github.com/vaibhavkapur/Stablecoin-Payments-API/blob/main/README.md)
+
+## Documentation
+
+- [Getting Started](getting-started.md)
+- [Architecture](architecture.md)
+- [API Reference](api-reference.md)
+- [Configuration](configuration.md)
+- [Database Schema](database.md)
+- [Testing](testing.md)
+- [Deployment](deployment.md)
+- [Ledger System](ledger.md)
+- [Webhooks](webhooks.md)
+- [Workers](workers.md)
+- [Services](services.md)
 
 ## Overview
 
-The Stablecoin Payments API is a complete backend system for accepting, holding, and transferring USDC stablecoins. Built with FastAPI and Python, it provides a familiar Stripe-style interface for managing the full lifecycle of stablecoin transactions — from customer onboarding and fiat-to-USDC deposits to on-chain transfers and merchant payment intents.
+The API demonstrates stablecoin payment workflows through a Stripe-style interface, from customer onboarding and simulated fiat deposits to transfers and merchant payment intents. The local services model wallet creation and blockchain settlement.
 
 Every balance movement is tracked through a **double-entry ledger**, ensuring full auditability and reconciliation at all times.
 
@@ -62,7 +74,9 @@ Every balance movement is tracked through a **double-entry ledger**, ensuring fu
                      └──────────────────────────────────────────────┘
 ```
 
-## Tech Stack
+## Tech Stack and Scope
+
+Python / FastAPI / SQLAlchemy, with SQLite or PostgreSQL and Redis. Wallet provisioning, fiat deposits, and blockchain transfers use local simulation; the API does not move real funds.
 
 | Component | Technology |
 |:----------|:-----------|
@@ -100,3 +114,13 @@ stablecoin-payments-api/
 ├── docker-compose.yml
 └── requirements.txt
 ```
+
+## Related projects
+
+These are independent companion repositories. The links describe related work, not implemented runtime integrations:
+
+- [Agent Authorization Wallet + Merchant Trust Gateway](https://github.com/vaibhavkapur/Agent-Authorization-Wallet-Merchant-Trust-Gateway): purchase authorization, merchant verification, and execution evidence.
+- [Agent Services Marketplace](https://github.com/vaibhavkapur/Agent-Services-Marketplace): service discovery, quotes, and agent purchase workflows.
+- [Agentic Commerce Protocol Test Lab](https://github.com/vaibhavkapur/Agentic-Commerce-Protocol-Test-Lab): protocol fixtures, scenarios, and conformance checks.
+- [Autonomous Price Watch Buyer](https://github.com/vaibhavkapur/Autonomous-Price-Watch-Buyer): price monitoring and bounded purchase decisions.
+- [Cross-Merchant Procurement Agent](https://github.com/vaibhavkapur/Cross-Merchant-Procurement-Agent): merchant comparison and procurement planning.

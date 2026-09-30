@@ -5,10 +5,10 @@ nav_order: 7
 ---
 
 # Database Schema
-{: .fs-9 }
+
+[Documentation home](index.md)
 
 PostgreSQL schema with eight core tables, managed by Alembic migrations and accessed through SQLAlchemy async ORM.
-{: .fs-6 .fw-300 }
 
 ---
 

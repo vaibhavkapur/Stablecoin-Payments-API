@@ -5,10 +5,10 @@ nav_order: 11
 ---
 
 # Deployment
-{: .fs-9 }
+
+[Documentation home](index.md)
 
 Run the full stack with Docker Compose, or deploy to production with PostgreSQL and Redis.
-{: .fs-6 .fw-300 }
 
 ---
 
@@ -53,7 +53,7 @@ pip install -r requirements.txt
 
 ### 2. Configure Environment
 
-Set environment variables or create a `.env` file. See [Configuration](configuration) for all available settings.
+Set environment variables or create a `.env` file. See [Configuration](configuration.md) for all available settings.
 
 ```bash
 export DATABASE_URL=postgresql+asyncpg://user:pass@db-host:5432/stablecoin_payments

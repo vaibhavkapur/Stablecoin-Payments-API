@@ -1,7 +1,7 @@
 title: Stablecoin Payments API
 description: A Stripe-like REST API for stablecoin payments — manage customers, wallets, deposits, transfers, and merchant checkout flows with a double-entry ledger on Base Sepolia.
 baseurl: "/Stablecoin-Payments-API"
-url: ""
+url: "https://vaibhavkapur.github.io"
 
 theme: just-the-docs
 
@@ -9,7 +9,7 @@ color_scheme: dark
 
 aux_links:
   "GitHub":
-    - "https://github.com/vaibhavkapur22/Stablecoin-Payments-API"
+    - "https://github.com/vaibhavkapur/Stablecoin-Payments-API"
 
 footer_content: "Open Source under MIT License."
 
@@ -31,3 +31,7 @@ callouts:
   tip:
     title: Tip
     color: green
+
+plugins:
+  - jekyll-relative-links
+  - jekyll-seo-tag

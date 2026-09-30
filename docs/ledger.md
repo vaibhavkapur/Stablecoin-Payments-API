@@ -5,10 +5,10 @@ nav_order: 5
 ---
 
 # Ledger System
-{: .fs-9 }
+
+[Documentation home](index.md)
 
 Double-entry bookkeeping that creates a complete audit trail for every balance movement in the system.
-{: .fs-6 .fw-300 }
 
 ---
 
